@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django
+  labels:
+    app: django
+    tier: frontend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: django
+            tier: frontend
+    template:
+        metadata:
+            labels:
+                app: django
+                tier: frontend
+        spec:
+            containers:
+                - name: django
+                  image: jairodh/django:v1-1
+                  env:
+                    - name: HOST_DJANGO
+                      value: mariadb
+                    - name: DB_DJANGO
+                      valueFrom:
+                        configMapKeyRef:
+                          name: cm-mariadb
+                          key: database
+                    - name: PWD_DJANGO
+                      valueFrom:
+                        secretKeyRef:
+                          name: secret-mariadb
+                          key: passwd
+                    - name: USER_DJANGO
+                      valueFrom:
+                        configMapKeyRef:
+                          name: cm-mariadb
+                          key: user
+                  ports:
+                    - containerPort: 8010
+                      name: django

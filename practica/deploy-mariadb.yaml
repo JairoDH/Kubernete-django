@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mariadb
+    labels:
+        app: mariadb
+        tier: backend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: mariadb
+            tier: backend
+    template:
+        metadata:
+            labels:
+                app: mariadb
+                tier: backend
+        spec:
+            containers:
+                - name: contenedor-mariadb
+                  image: mariadb
+                  env:
+                    - name: MARIADB_ROOT_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name: secret-mariadb
+                            key: rootpasswd
+                    - name: MARIADB_DATABASE
+                      valueFrom:
+                        configMapKeyRef:
+                            name: cm-mariadb
+                            key: database
+                    - name: MARIADB_USER
+                      valueFrom:
+                        configMapKeyRef:
+                            name: cm-mariadb
+                            key: user
+                    - name: MARIADB_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                            name: secret-mariadb
+                            key: passwd
+                  ports:
+                      - name: mariadb
+                        containerPort: 3306
+                  volumeMounts:
+                      - mountPath: /var/lib/mysql
+                        name: volumen-mariadb
+            volumes:
+                - name: volumen-mariadb
+                  persistentVolumeClaim:
+                    claimName: pvc-mariadb
